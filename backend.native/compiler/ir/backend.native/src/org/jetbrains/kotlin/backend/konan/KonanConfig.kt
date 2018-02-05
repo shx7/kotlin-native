@@ -72,7 +72,7 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
         .prefixBaseNameIfNot(prefix)
         .suffixIfNot(suffix)
 
-    val tempFiles = TempFiles(outputName)
+    val tempFiles = TempFiles(outputName, configuration.get(KonanConfigKeys.TEMPORARY_FILES_DIR))
 
     val moduleId: String
         get() = configuration.get(KonanConfigKeys.MODULE_NAME) ?: File(outputName).name
