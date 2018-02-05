@@ -68,8 +68,7 @@ internal class LinkStage(val context: Context) {
     }
 
     private fun temporary(name: String, suffix: String): String {
-        val temporaryFile = createTempFile(name, suffix)
-        temporaryFile.deleteOnExit()
+        val temporaryFile = File(context.config.temporaryFilesDir, "$name$suffix")
         return temporaryFile.absolutePath
     }
 

@@ -19,13 +19,13 @@ import org.jetbrains.kotlin.konan.file.File
 import org.jetbrains.kotlin.konan.file.*
 
 class TempFiles(val outputName: String, pathToTmpFiles: String?) {
-    val temporaryDir = createDir(pathToTmpFiles)
+    val dir = createDirForTemporaryFiles(pathToTmpFiles)
 
-    val nativeBinaryFile    by lazy { File(temporaryDir,"${outputName}.kt.bc") }
     val cAdapterHeader      by lazy { File("${outputName}_api.h") }
-    val cAdapterDef         by lazy { File(temporaryDir,"${outputName}_symbols.def") }
-    val cAdapterCpp         by lazy { createTempFile("api", ".cpp").deleteOnExit() }
-    val cAdapterBitcode     by lazy { createTempFile("api", ".bc").deleteOnExit() }
+    val nativeBinaryFile    by lazy { File(dir,"${outputName}.kt.bc") }
+    val cAdapterDef         by lazy { File(dir,"${outputName}_symbols.def") }
+    val cAdapterCpp         by lazy { File(dir, "api.cpp") }
+    val cAdapterBitcode     by lazy { File(dir, "api.bc") }
 
     val nativeBinaryFileName    get() = nativeBinaryFile.absolutePath
     val cAdapterCppName         get() = cAdapterCpp.absolutePath
@@ -36,17 +36,14 @@ class TempFiles(val outputName: String, pathToTmpFiles: String?) {
      * that will be deleted on exit.
      * Use or create given directory otherwise
      */
-    private fun createDir(path: String? = null): File = if (path == null) {
+    private fun createDirForTemporaryFiles(path: String? = null) = if (path == null) {
         createTempDir("konan_tmp").deleteOnExit()
     } else {
         if (File(path).isFile) {
             throw IllegalArgumentException("Given file is not a directory: $path")
-        } else {
-            File(path).apply {
-                if (!this.exists) {
-                    this.mkdirs()
-                }
-            }
+        }
+        File(path).apply {
+            if (!exists) { mkdirs() }
         }
     }
 }
