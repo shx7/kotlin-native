@@ -218,6 +218,41 @@ and set dependencies between building tasks.
     }
     ```
 
+## Multiplatform build
+
+Kotlin/Native, as well as Kotlin/JVM and Kotlin/JS, supports multiplatform projects. Such a support is included in the
+Kotlin/Native Gradle plugin by default and there is no need to apply additional plugins to use it. But the
+multiplatform support is disabled for all artifacts by default and may be enabled using the `enableMultiplatform` DSL method:
+
+    apply 'konan'
+    
+    konanArtifacts {
+        program('foo') {
+            enableMultiplatform true
+        }
+    }
+
+The Gradle plugin adds an `expectedBy` dependency configuration that is used to specify a dependency from Kotlin/Native
+project to a common project:
+
+    apply 'konan'
+    
+    dependencies {
+        expectedBy project('commonProject')
+    }
+
+When a common project is added as an `expectedBy` dependency, all the artifacts with the multiplatform support enabled
+will use it's `main` source set as a common module. One may specify a custom source set for each artifact using the
+`commonSourceSet` DSL method. In this case the multiplatform support will be also enabled for this artifact.
+
+    konanArtifacts {
+        program('foo') {
+            commonSourceSet 'customSourceSet'
+        }
+    }
+
+See more about multiplatform projects [here](https://kotlinlang.org/docs/reference/multiplatform.html).
+
 ## Tasks
 
 The Kotlin/Native plugin creates the following tasks:
@@ -243,6 +278,8 @@ for each an artifact defined in a `konanArtifacts` block. Such a task may have d
     |`enableOptimizations`|`boolean`                   |Are the optimizations enabled                             |
     |`enableAssertions   `|`boolean`                   |Is the assertion support enabled                          |
     |`measureTime        `|`boolean`                   |Does the compiler print phase time                        |
+    |`enableMultiplatform`|`boolean`                   |Is multiplatform enabled for this artifact                |
+    |`commonSourceSet`    |`String`                    |Name of a source set used as a common module              |
 
     ##### Properties available for a cinterop task (task building an interoperability library):
 
@@ -359,6 +396,11 @@ tables below.
     // Language and API version.
     konan.languageVersion = 'version'
     konan.apiVersion = 'version'
+    
+    dependencies {
+        // Use the ':foo' project as a common project for multiplatform build.
+        expectedBy project(':foo')
+    }
 
     konanArtifacts {
         // Targets to build this artifact for (optional, override the konan.targets list)
@@ -418,6 +460,13 @@ tables below.
             enableAssertions true     // Enable assertions in binaries generated (true/false).
             enableDebug true          // Enable debugging for binaries generated (true/false).
             noDefaultLibs true        // Don't link with default libraries
+            
+            // Custom name for a source set used as default module
+            commonSourceSet 'common'
+            
+            // Enable multiplatform support
+            enableMultiplatform true
+                        
 
             // Custom entry point
             entryPoint 'org.demo.foo'
