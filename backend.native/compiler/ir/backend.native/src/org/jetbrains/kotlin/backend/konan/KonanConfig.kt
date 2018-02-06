@@ -74,8 +74,6 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
 
     val tempFiles = TempFiles(outputName, configuration.get(KonanConfigKeys.TEMPORARY_FILES_DIR))
 
-    val temporaryFilesDir = tempFiles.dir
-
     val moduleId: String
         get() = configuration.get(KonanConfigKeys.MODULE_NAME) ?: File(outputName).name
 

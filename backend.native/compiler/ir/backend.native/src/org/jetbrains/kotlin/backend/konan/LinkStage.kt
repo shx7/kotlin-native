@@ -50,7 +50,7 @@ internal class LinkStage(val context: Context) {
             .execute()
 
     private fun llvmLto(files: List<BitcodeFile>): ObjectFile {
-        val combined = temporary("combined", ".o")
+        val combined = temporary("combined", "o")
 
         val tool = "${platform.absoluteLlvmHome}/bin/llvm-lto"
         val command = mutableListOf(tool, "-o", combined)
@@ -67,10 +67,8 @@ internal class LinkStage(val context: Context) {
         return combined
     }
 
-    private fun temporary(name: String, suffix: String): String {
-        val temporaryFile = File(context.config.temporaryFilesDir, "$name$suffix")
-        return temporaryFile.absolutePath
-    }
+    private fun temporary(name: String, suffix: String): String =
+            context.config.tempFiles.create(name, suffix).absolutePath
 
     private fun targetTool(tool: String, vararg arg: String) {
         val absoluteToolName = "${platform.absoluteTargetToolchain}/bin/$tool"
@@ -84,18 +82,18 @@ internal class LinkStage(val context: Context) {
     }
 
     private fun bitcodeToWasm(bitcodeFiles: List<BitcodeFile>): String {
-        val combinedBc = temporary("combined", ".bc")
+        val combinedBc = temporary("combined", "bc")
         hostLlvmTool("llvm-link", bitcodeFiles + listOf("-o", combinedBc))
 
-        val combinedS = temporary("combined", ".s")
+        val combinedS = temporary("combined", "s")
         targetTool("llc", combinedBc, "-o", combinedS)
 
         val s2wasmFlags = (platform.configurables as WasmConfigurables).s2wasmFlags.toTypedArray()
-        val combinedWast = temporary( "combined", ".wast")
+        val combinedWast = temporary( "combined", "wast")
         targetTool("s2wasm", combinedS, "-o", combinedWast, *s2wasmFlags)
 
-        val combinedWasm = temporary( "combined", ".wasm")
-        val combinedSmap = temporary( "combined", ".smap")
+        val combinedWasm = temporary( "combined", "wasm")
+        val combinedSmap = temporary( "combined", "smap")
         targetTool("wasm-as", combinedWast, "-o", combinedWasm, "-g", "-s", combinedSmap)
 
         return combinedWasm
